@@ -335,10 +335,37 @@ Ask: "last commit, staged changes, specific file, or all unstaged?"
 **TR:** "bitti", "branch'i sil", "temizle"
 
 Show session summary first, then:
+
+**IMPORTANT — uncommitted changes check before merge:**
 ```bash
-git checkout <base-branch>
-git branch -d <old-branch>
+git status --short
 ```
+If uncommitted changes exist → stash first, restore after:
+```bash
+git stash
+gh pr merge <number> --merge
+git stash pop   # restore after merge
+```
+If no uncommitted changes:
+```bash
+gh pr merge <number> --merge
+```
+
+**NEVER rely on `--delete-branch` flag alone.** It only runs when gh performs
+the merge itself. If the PR was already merged (e.g., via web or a prior failed
+attempt), the flag is silently skipped. Always delete remote branch explicitly:
+
+```bash
+git push origin --delete <branch-name>
+git branch -d <branch-name>
+```
+
+Then verify:
+```bash
+git branch -a   # local branch gone
+git ls-remote --heads origin <branch-name>   # should return empty
+```
+
 - Only after PR is merged
 - Confirm before deleting
 - Log: `cleaned`
